@@ -1,0 +1,53 @@
+---
+- name: Remove the default configuration 
+  shell: rm -rf /etc/postfix/sasl
+
+- file:
+    state: absent 
+    path: /etc/postfix/master.cf
+- file:
+    state: absent 
+    path: /etc/postfix/main.cf.proto
+- file:
+    state: absent 
+    path: /etc/postfix/master.cf.proto
+- file:
+    state: absent 
+    path: /etc/postfix/main.cf
+
+- name: Install main.cf
+  ansible.builtin.template: 
+    src: postfix/main.cf.j2 
+    dest: /etc/postfix/main.cf
+    mode: 0640 
+    group: root
+    user: root 
+
+- shell: openssl dhparam -out /etc/postfix/dh2048.pem 2048
+
+- ansible.builtin.copy:
+    src: postfix/submission_header_cleanup
+    dest: /etc/postfix/submission_header_cleanup
+    owner: root
+    group: root
+    mode: 0660 
+
+- file:
+    path: /etc/postfix/sql
+    state: directory 
+    owner: root
+    group: postfix 
+    mode: 0660 
+
+- file:
+    path: /etc/postfix/without_ptr
+    state: present 
+    owner: root
+    group: postfix
+    mode: 0660 
+
+- shell: postmap /etc/postfix/without_ptr
+
+- shell: newalias 
+
+

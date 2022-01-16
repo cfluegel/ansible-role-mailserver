@@ -1,0 +1,35 @@
+---
+
+- name: Cratem vmail user group
+  group:
+    name: vmail
+    state: present
+
+- name: Create vmail user
+  user:
+    create_home: true
+    home: /var/vmail
+    shell: /usr/sbin/nologin
+    group: vmail
+
+- file:
+    path: /var/vmail/mailboxes
+    owner: vmail
+    group: vmail
+
+- file:
+    path: /var/vmail/sieve
+    owner: vmail
+    group: vmail
+
+- file:
+    path: /var/vmail/sieve/global
+    owner: vmail
+    group: vmail
+
+- file:
+    path: /var/vmail/
+    owner: vmail
+    group: vmail
+    mode: '0770'
+    recurse: true

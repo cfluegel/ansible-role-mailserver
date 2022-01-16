@@ -1,0 +1,23 @@
+---
+# tasks to prepare the mysql server
+- name: Copy mysql database to target
+  copy:
+    src: vmail.sql
+    dest: /tmp
+
+- name: Create vmail database
+  mysql_db:
+    state: import
+    name: all
+    target: /tmp/vmail.sql
+    login_user: root
+    login_unix_socket: "/run/mysqld/mysqld.sock"
+
+- name: Create vmail database user
+  mysql_user:
+    host: localhost
+    name: vmail
+    password: "{{ mysql_vmail_password }}"
+    priv: "vmail.*:SELECT"
+    login_user: root
+    login_unix_socket: "/run/mysqld/mysqld.sock"

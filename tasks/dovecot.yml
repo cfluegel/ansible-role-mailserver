@@ -1,0 +1,47 @@
+---
+- name: Remove the default configuration 
+  shell: rm -rf /etc/dovecot/*
+
+- shell: openssl dhparam -out /etc/dovecot/dh4096.pem 4096 
+
+- name: Install dovecot.conf 
+  ansible.builtin.template: 
+    src: dovecot/dovecot.conf.j2 
+    dest: /etc/dovecot/dovecot.conf
+    mode: 0640 
+    group: root
+    user: root 
+  
+- name: Install dovecot-sql.conf 
+  ansible.builtin.template: 
+    src: dovecot/dovecot-sql.conf.j2 
+    dest: /etc/dovecot/dovecot-sql.conf
+    mode: 0440 
+    group: root
+    owner: root   
+
+- file:
+    path: /var/vmail/sieve/global
+    owner: vmail
+    group: vmail
+
+- copy:
+    src: dovecot/spam-global.sieve
+    dest: /var/vmail/sieve/global
+    owner: root
+    group: root 
+    mode: 0660 
+
+- copy:
+    src: dovecot/learn-ham.sieve
+    dest: /var/vmail/sieve/global
+    owner: root
+    group: root 
+    mode: 0660 
+
+- copy:
+    src: dovecot/learn-spam.sieve
+    dest: /var/vmail/sieve/global
+    owner: root
+    group: root 
+    mode: 0660 

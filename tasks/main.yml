@@ -1,0 +1,60 @@
+---
+# tasks file for ansible-role-mailserver/
+- hostname:
+    name: "{{ mailserver_fqdn }}"
+
+- template:
+    dest: /etc/hosts
+    src: hosts.j2
+    group: root
+    owner: root
+
+- name: Set /etc/mailname to the FQDN
+  copy:
+    content: "{{ mailserver_fqdn }}"
+    dest: "/etc/mailname"
+    owner: root
+    group: root
+    mode: '0664'
+
+- name: Install packages
+  include_tasks: install-packages.yml
+
+- name: Set nameserver to unbound
+  copy:
+    content: "nameserver ::1"
+    dest: "/etc/resolvconf/resolv.conf.d/head"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Restart Unbound and enable it
+  service:
+    name:
+      - unbound
+    state: restarted
+    enabled: true
+
+- name: Disable and stop services for configuration phase
+  service:
+    name:
+      - dovecot
+      - postfix
+      - rspamd
+    state: stopped
+    enabled: true
+
+
+- include_tsks: mysql.yml
+
+- include_tasks: create-vmail-user.yml
+
+# ansible-acme-sh https://github.com/nickjj/ansible-acme-sh  
+
+- include_tasks: nginx.yml
+
+- include_tasks: dovecot.yml 
+
+- include_tasks: postfix.yml 
+
+

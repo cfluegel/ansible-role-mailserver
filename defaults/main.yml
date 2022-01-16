@@ -1,0 +1,13 @@
+---
+# defaults file for ansible-role-mailserver/
+
+
+mailserver_fqdn: mail.example.org
+
+mysql_vmail_password: vmaildbpass
+
+rspamd-worker-password: secret
+# rspamd-worker-password-hashed 
+
+rspamd-selektor: "2022"
+rspamd-selektor-bit: 2048

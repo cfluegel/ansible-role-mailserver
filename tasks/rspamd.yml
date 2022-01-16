@@ -1,0 +1,109 @@
+---
+- name: Ecrypt the rspam password
+  ansible.builtin.shell: "rspamadm pw -p {{ rspamd-worker-password }} | tail -1"
+  register: rspamd-worker-password-hashed
+
+- ansible.builtin.template:
+    src: rspamd/worker-controller.inc.j2 
+    dest: /etc/rspamd/local.d/worker-controller.inc 
+    owner: root 
+    group: root 
+    mode: '0664'
+
+- ansible.builtin.template:
+    src: rspamd/logging.inc.j2 
+    dest: /etc/rspamd/local.d/logging.inc
+    owner: root 
+    group: root
+    mode: '0644'
+
+- ansible.builtin.template:
+    src: rspamd/milter_headers.conf.j2
+    dest: /etc/rspamd/local.d/milter_headers.conf
+    owner: root 
+    group: root 
+    mode: '0644'
+
+- ansible.builtin.template:
+    src: rspamd/classifier-bayes.conf.j2 
+    dest: /etc/rspamd/local.d/classifier-bayes.conf
+    owner: root 
+    group: root 
+    mode: '0644'
+
+- ansible.builtin.template:
+    src: rspamd/redis.conf.j2
+    dest: /etc/rspamd/local.d/redis.conf
+    owner: root 
+    group: root 
+    mode: '0644'
+
+- ansible.builtin.template: 
+    src: rspamd/override_d-classifier-bayes.conf.j2
+    dest: /etc/rspamd/override.d/classifier-bayes.conf
+    owner: root 
+    group: root 
+    mode: '0644'
+
+- ansible.builtin.file:
+    state: touch 
+    owner: root 
+    group: root
+    mode: '0664'
+    path: /etc/rspamd/local.d/whitelist_ip.map
+
+- ansible.builtin.file:
+    state: touch 
+    owner: root 
+    group: root
+    mode: '0664'
+    path: /etc/rspamd/local.d/whitelist_from.map
+
+- ansible.builtin.file:
+    state: touch 
+    owner: root 
+    group: root
+    mode: '0664'
+    path: /etc/rspamd/local.d/blacklist_ip.map
+
+- ansible.builtin.file:
+    state: touch 
+    owner: root 
+    group: root
+    mode: '0664'
+    path: /etc/rspamd/local.d/blacklist_from.map
+
+- ansible.builtin.file:
+    state: directory 
+    owner: root
+    group: root
+    mode: '0755'
+    path: /var/lib/rspamd/dkim/
+
+- ansible.builtin.shell: "rspamadm dkim_keygen -b {{ rspamd-selektor-bit }} -s {{ rspamd-selektor }} -k /var/lib/rspamd/dkim/{{ rspamd-selektor }}.key > /var/lib/rspamd/dkim/{{ rspamd-selektor }}.txt"
+
+- ansible.builtin.file:
+    state: directory 
+    owner: _rspamd
+    group: _rspamd
+    mode: '0440'
+    path: /var/lib/rspamd/dkim/
+    recurse: yes 
+
+- ansible.builtin.template: 
+    src: rspamd/dkim_signing.conf.j2
+    dest: /etc/rspamd/local.d/dkim_signing.conf
+    owner: root 
+    group: root 
+    mode: '0644'
+  
+- ansible.builtin.template: 
+    src: rspamd/dkim_signing.conf.j2
+    dest: /etc/rspamd/local.d/arc.conf
+    owner: root 
+    group: root 
+    mode: '0644'  
+
+- ansible.builtin.service: 
+    name: rspamd 
+    state: restarted  
